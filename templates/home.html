@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MintBoard</title>
+</head>
+<body>
+    <h1>Добро пожаловать на MintBoard!</h1>
+
+    {% if user.is_authenticated %}
+        <p>Привет, <strong>{{ user.username }}</strong>!</p>
+        <p>О себе: {{ user.bio }}</p>
+        
+        <!-- Кнопка выхода POST-запросом (Обязательно для Django 5.x/6.x) -->
+        <form action="{% url 'logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit">Выйти из аккаунта</button>
+        </form>
+    {% else %}
+        <p>Вы зашли как гость.</p>
+        <a href="{% url 'login' %}">Войти</a> или <a href="{% url 'signup' %}">Зарегистрироваться</a>
+    {% endif %}
+</body>
+</html>

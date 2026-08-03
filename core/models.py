@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
+from django.contrib.auth.models import AbstractUser
 
 class SiteConfig(models.Model):
     FONT_FAMILY_CHOICES = [
@@ -53,3 +54,6 @@ class SiteConfig(models.Model):
 
     def __str__(self):
         return "Site Settings"
+
+class user(AbstractUser):
+    bio = models.TextField(max_length=500, blank=True, verbose_name="About me")
