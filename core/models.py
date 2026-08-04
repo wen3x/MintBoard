@@ -4,12 +4,6 @@ from django.core.validators import FileExtensionValidator
 from django.contrib.auth.models import AbstractUser
 
 class SiteConfig(models.Model):
-    FONT_FAMILY_CHOICES = [
-        ('roboto', 'Roboto (Sans-serif)'),
-        ('inter', 'Inter (Modern)'),
-        ('pt-serif', 'PT Serif (Serif)'),
-        ('monospace', 'Monospace (Code)'),
-    ]
 
     SITE_NAME = models.CharField(max_length=20, default="MintBoard")
     

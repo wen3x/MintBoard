@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{{ site_settings.SITE_NAME|default:'MintBoard' }}{% endblock %}</title>
+    <title>My Profile - {{ site_settings.SITE_NAME|default:'MintBoard' }}</title>
     
     {% if site_settings.FAVICON %}
     <link rel="icon" type="image/svg+xml" href="{{ site_settings.FAVICON.url }}">
@@ -232,8 +232,7 @@
         .btn-danger:hover {
             background: #c0392b;
         }
-        
-        /* Футер */
+
         .footer {
             background: var(--background-color);
             border-top: 2px solid var(--accent-color);
@@ -338,12 +337,14 @@
         </a>
         <nav class="header-nav">
             <a href="/">Home</a>
+            <a href="#">Blog</a>
+            <a href="#">Contacts</a>
             <div class="header-user">
                 <span style="font-size:14px;color:#5f6b7a;">
                     {% if user.is_authenticated %}
                         {{ user.username }}
                     {% else %}
-                        <a href="{% url 'login' %}" style="color:var(--accent-color);text-decoration:none;">Войти</a>
+                        <a href="{% url 'login' %}" style="color:var(--accent-color);text-decoration:none;">Login</a>
                     {% endif %}
                 </span>
                 {% if user.is_authenticated %}
@@ -354,16 +355,59 @@
     </header>
 
     <main class="main">
-        {% block content %}
-        {% endblock %}
+        <div class="profile-card">
+            <div class="profile-top">
+                <div class="profile-avatar">{{ user.username|first|upper }}</div>
+                <div>
+                    <div class="profile-name">{{ user.get_full_name|default:user.username }}</div>
+                    <div class="profile-username">@{{ user.username }}</div>
+                    <div class="profile-joined">
+                        {% if user.date_joined %}
+                            Joined {{ user.date_joined|date:"d.m.Y" }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="profile-info">
+                <div class="info-row">
+                    <div class="info-label">Username</div>
+                    <div class="info-value">{{ user.username }}</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Full name</div>
+                    <div class="info-value">{{ user.get_full_name|default:"Not specified" }}</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Email</div>
+                    <div class="info-value">{{ user.email|default:"Not specified" }}</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Bio</div>
+                    <div class="info-value {% if bio == 'Информация не заполнена' %}empty{% endif %}">
+                        {{ bio|linebreaksbr }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="profile-actions">
+                <a href="#" class="btn btn-primary">Edit</a>
+                <a href="#" class="btn btn-outline">Change Password</a>
+                <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
+            </div>
+        </div>
     </main>
-
+    
     <footer class="footer">
         <div class="footer-inner">
-            <span>© 2026 {{ site_settings.SITE_NAME|default:'MintBoard' }}. Все права защищены.</span>
+            <span>© 2026 {{ site_settings.SITE_NAME|default:'MintBoard' }}. All rights reserved.</span>
             <div class="footer-links">
-                <a href="#">About Us</a>
+                <a href="#">About</a>
                 <a href="#">Privacy Policy</a>
+                <a href="#">Contacts</a>
             </div>
         </div>
     </footer>

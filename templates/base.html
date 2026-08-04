@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - {{ site_settings.SITE_NAME|default:'MintBoard' }}{% endblock %}
+
+{% block content %}
+<div class="profile-card">
+    <div class="profile-top">
+        <div class="profile-avatar">{{ user.username|first|upper }}</div>
+        <div>
+            <div class="profile-name">{{ user.get_full_name|default:user.username }}</div>
+            <div class="profile-username">@{{ user.username }}</div>
+            <div class="profile-joined">
+                {% if user.date_joined %}
+                    Присоединился {{ user.date_joined|date:"d.m.Y" }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-info">
+        <div class="info-row">
+            <div class="info-label">Username</div>
+            <div class="info-value">{{ user.username }}</div>
+        </div>
+        
+        <div class="info-row">
+            <div class="info-label">Full name</div>
+            <div class="info-value">{{ user.get_full_name|default:"Not specified" }}</div>
+        </div>
+        
+        <div class="info-row">
+            <div class="info-label">Email</div>
+            <div class="info-value">{{ user.email|default:"Not specified" }}</div>
+        </div>
+        
+        <div class="info-row">
+            <div class="info-label">Bio</div>
+            <div class="info-value {% if bio == 'Not specified information' %}empty{% endif %}">
+                {{ bio|linebreaksbr }}
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-actions">
+        <a href="#" class="btn btn-primary">Edit</a>
+        <a href="#" class="btn btn-outline">Сhange Password</a>
+        <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
+    </div>
+</div>
+{% endblock %}
