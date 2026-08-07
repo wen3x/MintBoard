@@ -7,14 +7,10 @@ from django.contrib.auth.decorators import login_required
 
 @login_required
 def profile_view(request):
-    """
-    Простая страница профиля пользователя
-    Выводит username и bio
-    """
     user = request.user
     context = {
         'user': user,
-        'bio': user.profile.bio if hasattr(user, 'profile') else 'Информация о пользователе отсутствует',
+        'bio': user.profile.bio if hasattr(user, 'profile') else 'No info yet',
     }
     return render(request, 'profile.html', context)
 

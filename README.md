@@ -16,4 +16,22 @@ without touching a single line of code.
 
 ---
 
+# SOON (IN 1.0):
+
+[ ] Posts system
+[ ] Comment system
+[ ] Topics
+[ ] Enchance home, profile page
+[ ] Mini profiles
+[ ] Email system
+[ ] Algorithms
+
+# LATER (AFTER RELEASE):
+
+[ ] More options
+[ ] Design enchancements
+[ ] Interface improvements
+
+---
+
 **License:** MIT
