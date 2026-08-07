@@ -28,9 +28,9 @@ without touching a single line of code.
 
 # LATER (AFTER RELEASE):
 
-[ ] More options
-[ ] Go integration
-[ ] Interface improvements
+- [ ] More options
+- [ ] Go integration
+- [ ] Interface improvements
 
 ---
 
