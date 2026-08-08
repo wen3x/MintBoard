@@ -1,7 +1,16 @@
 from django import forms
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 from django_svg_image_form_field import SvgAndImageFormField
-from .models import SiteConfig
+from .models import Post, SiteConfig, user
+
+admin.site.register(user, UserAdmin)
+
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+    list_display = ('title', 'author', 'created_at')
+    list_filter = ('created_at', 'author')
+    search_fields = ('title', 'description')
 
 class SiteConfigForm(forms.ModelForm):
     LOGO = SvgAndImageFormField(required=False, label="Logo (SVG)")

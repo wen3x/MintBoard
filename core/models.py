@@ -1,7 +1,31 @@
+from django.conf import settings
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
 from django.contrib.auth.models import AbstractUser
+
+class Post(models.Model):
+
+    title = models.CharField(
+        max_length=100,
+        default="No title yet"
+    )
+
+    description = models.CharField(
+        max_length=2000,
+        default="No description provided"
+    )
+
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name='Author'
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Date'
+    )
 
 class SiteConfig(models.Model):
 
