@@ -7,6 +7,11 @@ MintBoard is a fully customizable social network built with Django. You can chan
 
 Current version is under active development. Full release expected on 28 August.
 
+## Models Graph
+
+![Models Graph](models_graph.svg)
+
+
 
 ## Features
 
