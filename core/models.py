@@ -25,6 +25,15 @@ class Post(models.Model):
         auto_now_add=True,
         verbose_name='Date'
     )
+    likes = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name='liked_posts',
+        blank=True,
+        verbose_name='Likes'
+    )
+
+    def __str__(self):
+        return self.title
 
 class SiteConfig(models.Model):
 
@@ -74,3 +83,6 @@ class SiteConfig(models.Model):
 
 class user(AbstractUser):
     bio = models.TextField(max_length=500, blank=True, verbose_name="About me")
+
+    def __str__(self):
+        return self.username

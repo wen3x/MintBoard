@@ -1,0 +1,20 @@
+{% for post in posts %}
+    <div class="card" id="post-{{ post.id }}">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+                <h3 style="margin-bottom: 0.5rem;">{{ post.title }}</h3>
+                <p style="margin-bottom: 0.75rem; line-height: 1.5;">{{ post.description|truncatechars:200 }}</p>
+            </div>
+        </div>
+        <div class="flex text-muted" style="font-size: 0.9rem; gap: 1rem; flex-wrap: wrap;">
+            <span>by <a href="{% url 'core:profile_detail' username=post.author.username %}" style="color: var(--accent-color, #2ECC71); text-decoration: none;">{{ post.author.username }}</a></span>
+            <span>{{ post.created_at|date:"F j, Y, g:i a" }}</span>
+        </div>
+        <div style="margin-top: 1rem; display: flex; gap: 1rem; align-items: center;">
+            {% include "partials/like_button.html" with post=post liked=post.user_liked likes_count=post.likes_count %}
+            <span class="text-muted">💬 0</span>
+        </div>
+    </div>
+{% empty %}
+    <p class="text-muted text-center">No posts yet.</p>
+{% endfor %}

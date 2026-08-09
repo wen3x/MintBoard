@@ -1,50 +1,101 @@
-{% extends 'base.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ site_settings.SITE_NAME|default:"MintBoard" }}</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        :root {
+            --accent-color: {{ site_settings.ACCENT_COLOR|default:"#2ECC71" }};
+            --bg-color: {{ site_settings.BACKGROUND_COLOR|default:"#ffffff" }};
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="{% url 'core:home' %}" class="site-brand">
+            {% if site_settings.LOGO %}
+                <img src="{{ site_settings.LOGO.url }}" alt="{{ site_settings.SITE_NAME }} logo">
+            {% else %}
+                <svg viewBox="0 0 24 24" width="32" height="32">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
+                </svg>
+            {% endif %}
+            {{ site_settings.SITE_NAME|default:"MintBoard" }}
+        </a>
+        <nav>
+            <a href="{% url 'core:home' %}">Home</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'core:profile' %}">Profile</a>
+                <a href="{% url 'logout' %}">Logout</a>
+                <a href="{% url 'core:create_post' %}" class="nav-button">+ New Post</a>
+            {% else %}
+                <a href="{% url 'login' %}">Login</a>
+                <a href="{% url 'signup' %}" class="nav-button">Sign Up</a>
+            {% endif %}
+        </nav>
+    </header>
 
-{% block title %}My Profile - {{ site_settings.SITE_NAME|default:'MintBoard' }}{% endblock %}
+    <div class="search-bar">
+        <form action="{% url 'core:home' %}" method="get">
+            <input type="text" name="q" placeholder="Search posts..." value="{{ request.GET.q|default:'' }}">
+            <button type="submit" class="btn">Search</button>
+        </form>
+    </div>
 
-{% block content %}
-<div class="profile-card">
-    <div class="profile-top">
-        <div class="profile-avatar">{{ user.username|first|upper }}</div>
-        <div>
-            <div class="profile-name">{{ user.get_full_name|default:user.username }}</div>
-            <div class="profile-username">@{{ user.username }}</div>
-            <div class="profile-joined">
-                {% if user.date_joined %}
-                    Присоединился {{ user.date_joined|date:"d.m.Y" }}
-                {% endif %}
+    <div class="container">
+        <aside class="sidebar-left">
+            <div class="card">
+                <h4>Navigation</h4>
+                <ul class="nav-list">
+                    <li><a href="{% url 'core:home' %}">Home</a></li>
+                    <li><a href="#">Popular</a></li>
+                    <li><a href="#">Recent</a></li>
+                    {% if user.is_authenticated %}
+                        <li><a href="{% url 'core:profile' %}">My Profile</a></li>
+                    {% endif %}
+                </ul>
             </div>
-        </div>
-    </div>
-    
-    <div class="profile-info">
-        <div class="info-row">
-            <div class="info-label">Username</div>
-            <div class="info-value">{{ user.username }}</div>
-        </div>
-        
-        <div class="info-row">
-            <div class="info-label">Full name</div>
-            <div class="info-value">{{ user.get_full_name|default:"Not specified" }}</div>
-        </div>
-        
-        <div class="info-row">
-            <div class="info-label">Email</div>
-            <div class="info-value">{{ user.email|default:"Not specified" }}</div>
-        </div>
-        
-        <div class="info-row">
-            <div class="info-label">Bio</div>
-            <div class="info-value {% if bio == 'Not specified information' %}empty{% endif %}">
-                {{ bio|linebreaksbr }}
+            <div class="card">
+                <h4>Communities</h4>
+                <ul class="nav-list">
+                    <li><a href="#">Technology</a></li>
+                    <li><a href="#">Programming</a></li>
+                    <li><a href="#">Design</a></li>
+                </ul>
             </div>
-        </div>
+        </aside>
+
+        <main class="main-content">
+            {% block content %}
+            {% endblock %}
+        </main>
+
+        <aside class="sidebar-right">
+            <div class="card">
+                <h4>Trending</h4>
+                <ul class="trending-list">
+                    <li><a href="#">#django</a></li>
+                    <li><a href="#">#htmx</a></li>
+                    <li><a href="#">#python</a></li>
+                </ul>
+            </div>
+            <div class="card">
+                <h4>Recent Activity</h4>
+                <ul class="recent-list">
+                    <li><span class="text-muted">User A posted...</span></li>
+                    <li><span class="text-muted">User B commented...</span></li>
+                </ul>
+            </div>
+        </aside>
     </div>
-    
-    <div class="profile-actions">
-        <a href="#" class="btn btn-primary">Edit</a>
-        <a href="#" class="btn btn-outline">Сhange Password</a>
-        <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
-    </div>
-</div>
-{% endblock %}
+
+    <footer>
+        <p>&copy; {{ site_settings.SITE_NAME|default:"MintBoard" }}.</p>
+    </footer>
+</body>
+</html>
