@@ -2,7 +2,11 @@
     <div class="card" id="post-{{ post.id }}">
         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
             <div>
-                <h3 style="margin-bottom: 0.5rem;">{{ post.title }}</h3>
+                <h3 style="margin-bottom: 0.5rem;">
+                    <a href="{% url 'core:post_detail' post.id %}" style="text-decoration: none; color: inherit;">
+                        {{ post.title }}
+                    </a>
+                </h3>
                 <p style="margin-bottom: 0.75rem; line-height: 1.5;">{{ post.description|truncatechars:200 }}</p>
             </div>
         </div>

@@ -111,3 +111,20 @@ def like_post(request, post_id):
 @login_required
 def create_post(request):
     return HttpResponse('Create post form')
+
+def post_detail(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    return render(request, 'post_detail.html', {'post': post})
+
+def post_detail(request, post_id):
+    post = get_object_or_404(Post.objects.select_related('author'), id=post_id)
+    user = request.user if request.user.is_authenticated else None
+
+    if user:
+        post.user_liked = post.likes.filter(id=user.id).exists()
+    else:
+        post.user_liked = False
+    
+    post.likes_count = post.likes.count()
+    
+    return render(request, 'post_detail.html', {'post': post})
