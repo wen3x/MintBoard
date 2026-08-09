@@ -5,8 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django.template.loader import render_to_string
-from django.db.models import Count, Exists, OuterRef
-from .forms import CustomUserCreationForm
+from django.db.models import Count, Exists, OuterRef, Value, BooleanField
+from .forms import CustomUserCreationForm, PostForm
 from .models import Post, SiteConfig
 
 User = get_user_model()
@@ -24,16 +24,26 @@ def get_site_config():
 def home_view(request):
     config = get_site_config()
     user = request.user if request.user.is_authenticated else None
+    
+    # Базовый queryset
     posts = Post.objects.select_related('author').annotate(
-        likes_count=Count('likes'),
-        user_liked=Exists(Post.likes.through.objects.filter(
-            post_id=OuterRef('id'), user_id=user.id
-        )) if user else None
-    ).order_by('-created_at')[:10]
-
-    if user is None:
-        for post in posts:
-            post.user_liked = False
+        likes_count=Count('likes')
+    )
+    
+    # Добавляем user_liked только если пользователь авторизован
+    if user and user.is_authenticated:
+        posts = posts.annotate(
+            user_liked=Exists(Post.likes.through.objects.filter(
+                post_id=OuterRef('id'), user_id=user.id
+            ))
+        )
+    else:
+        # Для неавторизованных пользователей ставим False
+        posts = posts.annotate(
+            user_liked=Value(False, output_field=BooleanField())
+        )
+    
+    posts = posts.order_by('-created_at')[:10]
 
     context = {
         'posts': posts,
@@ -75,7 +85,14 @@ def load_more_posts(request):
     per_page = 10
     offset = (page - 1) * per_page
     user = request.user
-    posts = Post.objects.select_related('author').annotate(
+    
+    username = request.GET.get('username')
+    posts_query = Post.objects.select_related('author')
+    
+    if username:
+        posts_query = posts_query.filter(author__username=username)
+    
+    posts = posts_query.annotate(
         likes_count=Count('likes'),
         user_liked=Exists(Post.likes.through.objects.filter(
             post_id=OuterRef('id'), user_id=user.id
@@ -110,21 +127,29 @@ def like_post(request, post_id):
 
 @login_required
 def create_post(request):
-    return HttpResponse('Create post form')
-
-def post_detail(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    return render(request, 'post_detail.html', {'post': post})
+    if request.method == 'POST':
+        form = PostForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
+            post.save()
+            return redirect('core:post_detail', post_id=post.id)
+    else:
+        form = PostForm()
+    
+    config = get_site_config()
+    return render(request, 'create_post.html', {'form': form, 'config': config})
 
 def post_detail(request, post_id):
     post = get_object_or_404(Post.objects.select_related('author'), id=post_id)
     user = request.user if request.user.is_authenticated else None
 
-    if user:
+    if user and user.is_authenticated:
         post.user_liked = post.likes.filter(id=user.id).exists()
     else:
         post.user_liked = False
     
     post.likes_count = post.likes.count()
+    config = get_site_config()
     
-    return render(request, 'post_detail.html', {'post': post})
+    return render(request, 'post_detail.html', {'post': post, 'config': config})
