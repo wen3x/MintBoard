@@ -8,7 +8,6 @@ class Post(models.Model):
 
     title = models.CharField(
         max_length=100,
-        default="No title yet"
     )
 
     description = models.CharField(
