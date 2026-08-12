@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .views import PostDeleteView
 
 app_name = 'core'
 
@@ -11,4 +12,5 @@ urlpatterns = [
     path('api/like/<uuid:post_id>/', views.like_post, name='like_post'),
     path('create-post/', views.create_post, name='create_post'),
     path('post/<uuid:post_id>/', views.post_detail, name='post_detail'),
+    path('post/<uuid:pk>/delete/', PostDeleteView.as_view(), name='post_delete'),
 ]

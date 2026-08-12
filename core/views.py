@@ -8,6 +8,8 @@ from django.template.loader import render_to_string
 from django.db.models import Count, Exists, OuterRef, Value, BooleanField
 from .forms import CustomUserCreationForm, PostForm
 from .models import Post, SiteConfig
+from django.urls import reverse_lazy
+from django.views.generic.edit import DeleteView
 
 User = get_user_model()
 
@@ -153,3 +155,8 @@ def post_detail(request, post_id):
     config = get_site_config()
     
     return render(request, 'post_detail.html', {'post': post, 'config': config})
+
+class PostDeleteView(DeleteView):
+    model = Post
+    template_name = 'post_confirm_delete.html'
+    success_url = reverse_lazy('core:home')

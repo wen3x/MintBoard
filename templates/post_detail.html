@@ -23,6 +23,14 @@
             <div id="like-section">
                 {% include "partials/like_button.html" with post=post liked=post.user_liked likes_count=post.likes_count %}
             </div>
+            
+            {% if user == post.author %}
+            <div class="delete-action">
+                <a href="{% url 'core:post_delete' pk=post.id %}" class="btn btn-danger">
+                    <i class="fas fa-trash-alt"></i> Delete Post
+                </a>
+            </div>
+            {% endif %}
         </div>
     </div>
 
