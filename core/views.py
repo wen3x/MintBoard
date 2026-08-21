@@ -6,10 +6,11 @@ from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.db.models import Count, Exists, OuterRef, Value, BooleanField
-from .forms import CustomUserCreationForm, PostForm
-from .models import Post, SiteConfig
-from django.urls import reverse_lazy
-from django.views.generic.edit import DeleteView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import DeleteView
+
+from .forms import CustomUserCreationForm, PostForm, CommentForm
+from .models import Post, SiteConfig, Comment
 
 User = get_user_model()
 
@@ -26,13 +27,11 @@ def get_site_config():
 def home_view(request):
     config = get_site_config()
     user = request.user if request.user.is_authenticated else None
-    
-    # Базовый queryset
+
     posts = Post.objects.select_related('author').annotate(
         likes_count=Count('likes')
     )
-    
-    # Добавляем user_liked только если пользователь авторизован
+
     if user and user.is_authenticated:
         posts = posts.annotate(
             user_liked=Exists(Post.likes.through.objects.filter(
@@ -40,11 +39,10 @@ def home_view(request):
             ))
         )
     else:
-        # Для неавторизованных пользователей ставим False
         posts = posts.annotate(
             user_liked=Value(False, output_field=BooleanField())
         )
-    
+
     posts = posts.order_by('-created_at')[:10]
 
     context = {
@@ -87,13 +85,13 @@ def load_more_posts(request):
     per_page = 10
     offset = (page - 1) * per_page
     user = request.user
-    
+
     username = request.GET.get('username')
     posts_query = Post.objects.select_related('author')
-    
+
     if username:
         posts_query = posts_query.filter(author__username=username)
-    
+
     posts = posts_query.annotate(
         likes_count=Count('likes'),
         user_liked=Exists(Post.likes.through.objects.filter(
@@ -138,25 +136,48 @@ def create_post(request):
             return redirect('core:post_detail', post_id=post.id)
     else:
         form = PostForm()
-    
+
     config = get_site_config()
     return render(request, 'create_post.html', {'form': form, 'config': config})
 
 def post_detail(request, post_id):
     post = get_object_or_404(Post.objects.select_related('author'), id=post_id)
-    user = request.user if request.user.is_authenticated else None
+    comments = post.comments.all()
 
-    if user and user.is_authenticated:
-        post.user_liked = post.likes.filter(id=user.id).exists()
+    if request.user.is_authenticated:
+        post.user_liked = post.likes.filter(id=request.user.id).exists()
     else:
         post.user_liked = False
-    
+        # Easter Egg
+
     post.likes_count = post.likes.count()
     config = get_site_config()
-    
-    return render(request, 'post_detail.html', {'post': post, 'config': config})
+    form = CommentForm()
+
+    return render(request, 'post_detail.html', {
+        'post': post,
+        'comments': comments,
+        'config': config,
+        'form': form,
+    })
 
 class PostDeleteView(DeleteView):
     model = Post
     template_name = 'post_confirm_delete.html'
     success_url = reverse_lazy('core:home')
+
+class CommentCreateView(LoginRequiredMixin, CreateView):
+    model = Comment
+    fields = ['content']
+
+    def get(self, request, *args, **kwargs):
+        return redirect('core:post_detail', post_id=self.kwargs['pk'])
+
+    def form_valid(self, form):
+        post = get_object_or_404(Post, pk=self.kwargs['pk'])
+        form.instance.post = post
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return self.object.post.get_absolute_url()

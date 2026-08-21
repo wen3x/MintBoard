@@ -3,7 +3,14 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
 from django.contrib.auth.models import AbstractUser
+from django.urls import reverse
 import uuid
+
+class User(AbstractUser):
+    bio = models.TextField(max_length=500, blank=True, verbose_name="About me")
+
+    def __str__(self):
+        return self.username
 
 class Post(models.Model):
     
@@ -41,6 +48,37 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
+    def get_absolute_url(self):
+        return reverse('core:post_detail', args=[str(self.id)])
+
+class Comment(models.Model):
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+    content = models.TextField(verbose_name='Comment text')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='replies'
+    )
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f'Comment by {self.author} to {self.post}'
 
 class SiteConfig(models.Model):
 
@@ -87,9 +125,3 @@ class SiteConfig(models.Model):
 
     def __str__(self):
         return "Site Settings"
-
-class User(AbstractUser):  # Изменено с user на User
-    bio = models.TextField(max_length=500, blank=True, verbose_name="About me")
-
-    def __str__(self):
-        return self.username

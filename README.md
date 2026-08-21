@@ -196,7 +196,7 @@ All changes apply immediately without code modification.
 - [x] Posts system
 - [x] User authentication
 - [x] Like system
-- [ ] Comment system
+- [x] Comment system
 - [ ] Topics
 - [x] Enhanced home and profile pages
 - [ ] Mini profiles

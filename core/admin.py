@@ -2,7 +2,7 @@ from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django_svg_image_form_field import SvgAndImageFormField
-from .models import Post, SiteConfig, User
+from .models import Post, SiteConfig, User, Comment
 
 admin.site.register(User, UserAdmin)
 
@@ -12,6 +12,12 @@ class PostAdmin(admin.ModelAdmin):
     list_filter = ('created_at', 'author')
     search_fields = ('title', 'description')
     ordering = ('-created_at',)
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ('author', 'post', 'content', 'created_at')
+    list_filter = ('post', 'author', 'created_at')
+    search_fields = ('content', 'author__username', 'post__title')
 
 class SiteConfigForm(forms.ModelForm):
     LOGO = SvgAndImageFormField(required=False, label="Logo (SVG)")
