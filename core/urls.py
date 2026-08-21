@@ -16,4 +16,6 @@ urlpatterns = [
     path('post/<uuid:pk>/delete/', PostDeleteView.as_view(), name='post_delete'),
     path('post/<uuid:pk>/comment/', CommentCreateView.as_view(), name='add_comment'),
     path('mini-profile/<str:username>/', views.mini_profile, name='mini_profile'),
+    path('notifications/', views.notifications_view, name='notifications'),
+    path('notifications/mark-read/', views.mark_notifications_read, name='mark_notifications_read'),
 ]

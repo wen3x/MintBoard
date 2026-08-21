@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="notifications-container">
+    <div class="card" style="padding: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem;">
+            <h2 style="margin: 0;">Notifications</h2>
+            {% if notifications %}
+                <a href="{% url 'core:mark_notifications_read' %}" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-check-double"></i> Mark as read
+                </a>
+            {% endif %}
+        </div>
+
+        <div id="notification-list">
+            {% if notifications %}
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    {% for n in notifications %}
+                    <li style="
+                        padding: 0.75rem 1rem;
+                        margin-bottom: 0.5rem;
+                        background: {% if not n.read %}#f0f9ff{% else %}#f8f9fa{% endif %};
+                        border-radius: 8px;
+                        border-left: 4px solid {% if not n.read %}var(--accent-color){% else %}#dee2e6{% endif %};
+                        display: flex;
+                        align-items: center;
+                        gap: 0.75rem;
+                        transition: background 0.2s;
+                    ">
+                        <div style="flex-shrink: 0;">
+                            <a href="{% url 'core:profile_detail' username=n.actor.username %}">
+                                {% if n.actor.avatar %}
+                                    <img src="{{ n.actor.avatar.url }}" alt="{{ n.actor.username }}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+                                {% else %}
+                                    <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--accent-color); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.9rem;">
+                                        {{ n.actor.username|first|upper }}
+                                    </div>
+                                {% endif %}
+                            </a>
+                        </div>
+                        <div style="flex: 1;">
+                            <div>
+                                <a href="{% url 'core:profile_detail' username=n.actor.username %}" style="font-weight: 600; color: var(--accent-color); text-decoration: none;">
+                                    {{ n.actor.username }}
+                                </a>
+                                <span>{{ n.verb }}</span>
+                                {% if n.target_url %}
+                                    <a href="{{ n.target_url }}" style="color: #1a1a1a; text-decoration: none; font-weight: 500;">
+                                        {{ n.target_title|default:"post" }}
+                                    </a>
+                                {% endif %}
+                            </div>
+                            <small class="text-muted">{{ n.timestamp|timesince }} ago</small>
+                        </div>
+                        {% if not n.read %}
+                            <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent-color); flex-shrink: 0;"></span>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="text-center text-muted" style="padding: 3rem 0;">
+                    <p style="font-size: 1.2rem;">No notifications yet</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

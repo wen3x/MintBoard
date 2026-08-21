@@ -10,9 +10,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import DeleteView
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+from .utils import create_notification
 
 from .forms import CustomUserCreationForm, PostForm, CommentForm
-from .models import Post, SiteConfig, Comment
+from .models import Post, SiteConfig, Comment, Notification
 
 User = get_user_model()
 
@@ -119,6 +120,15 @@ def like_post(request, post_id):
         post.likes.add(user)
         liked = True
 
+    if liked:
+        create_notification(
+            recipient=post.author,
+            actor=user,
+            verb="liked your post",
+            target_url=post.get_absolute_url(),
+            target_title=post.title
+        )
+
     context = {
         'post': post,
         'liked': liked,
@@ -179,6 +189,26 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
         post = get_object_or_404(Post, pk=self.kwargs['pk'])
         form.instance.post = post
         form.instance.author = self.request.user
+        comment = form.save()
+
+        if post.author != self.request.user:
+            create_notification(
+                recipient=post.author,
+                actor=self.request.user,
+                verb="commented on your post",
+                target_url=post.get_absolute_url(),
+                target_title=post.title
+            )
+
+        if comment.parent and comment.parent.author != self.request.user:
+            create_notification(
+                recipient=comment.parent.author,
+                actor=self.request.user,
+                verb="replied to your comment",
+                target_url=post.get_absolute_url(),
+                target_title=post.title
+            )
+
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -188,3 +218,20 @@ def mini_profile(request, username):
     user = get_object_or_404(User, username=username)
     html = render_to_string('partials/mini_profile.html', {'user': user})
     return JsonResponse({'html': html})
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from .models import Notification
+
+@login_required
+def notifications_view(request):
+    notifications = request.user.notifications.all()
+    context = {
+        'notifications': notifications,
+    }
+    return render(request, 'notifications.html', context)
+
+@login_required
+def mark_notifications_read(request):
+    request.user.notifications.filter(read=False).update(read=True)
+    return redirect('core:notifications')

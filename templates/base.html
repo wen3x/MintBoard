@@ -36,6 +36,14 @@
                     <button type="submit" style="background: none; border: none; color: #fff; cursor: pointer; font-weight: 500; font-size: 1rem; padding: 0.25rem 0.5rem; border-radius: 4px; transition: background-color 0.2s; font-family: inherit;">
                         Logout
                     </button>
+            <a href="{% url 'core:notifications' %}">
+                Notifications
+                {% if unread_notifications_count > 0 %}
+                    <span style="background: #e74c3c; color: #fff; border-radius: 50%; padding: 0.1rem 0.5rem; font-size: 0.75rem; margin-left: 0.25rem;">
+                        {{ unread_notifications_count }}
+                    </span>
+                {% endif %}
+            </a>
                 </form>
                 <a href="{% url 'core:create_post' %}" class="nav-button">+ New Post</a>
             {% else %}
