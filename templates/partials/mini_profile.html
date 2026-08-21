@@ -1,0 +1,16 @@
+<div class="mini-profile">
+    <div class="mini-profile-avatar">
+        {% if user.avatar %}
+            <img src="{{ user.avatar.url }}" alt="{{ user.username }}">
+        {% else %}
+            <div class="avatar-placeholder">{{ user.username|first|upper }}</div>
+        {% endif %}
+    </div>
+    <div class="mini-profile-info">
+        <div class="mini-profile-username">{{ user.username }}</div>
+        {% if user.bio %}
+            <div class="mini-profile-bio">{{ user.bio|truncatechars:60 }}</div>
+        {% endif %}
+        <div class="mini-profile-karma">Karma: {{ user.karma }}</div>
+    </div>
+</div>

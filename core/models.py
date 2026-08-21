@@ -8,6 +8,8 @@ import uuid
 
 class User(AbstractUser):
     bio = models.TextField(max_length=500, blank=True, verbose_name="About me")
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name="Avatar")
+    karma = models.IntegerField(default=0, verbose_name="Karma")
 
     def __str__(self):
         return self.username

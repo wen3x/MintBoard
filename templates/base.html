@@ -30,7 +30,7 @@
         <nav>
             <a href="{% url 'core:home' %}">Home</a>
             {% if user.is_authenticated %}
-                <a href="{% url 'core:profile' %}">Profile</a>
+                <a href="{% url 'core:profile' %}" data-username="{{ user.username }}">Profile</a>
                 <form method="post" action="{% url 'logout' %}" style="display: inline;">
                     {% csrf_token %}
                     <button type="submit" style="background: none; border: none; color: #fff; cursor: pointer; font-weight: 500; font-size: 1rem; padding: 0.25rem 0.5rem; border-radius: 4px; transition: background-color 0.2s; font-family: inherit;">
@@ -102,5 +102,146 @@
     <footer>
         <p>&copy; {{ site_settings.SITE_NAME|default:"MintBoard" }}.</p>
     </footer>
+    <script>
+    (function() {
+        let currentPopup = null;
+        let hideTimeout = null;
+        let showTimeout = null;
+
+        function getUsernameFromLink(link) {
+            const match = link.href.match(/\/profile\/([^\/]+)\//);
+            if (match) return match[1];
+            return link.dataset.username || null;
+        }
+
+        function createPopup(username, anchor) {
+            if (currentPopup && currentPopup.dataset.username === username) {
+                return currentPopup;
+            }
+
+            if (currentPopup) {
+                currentPopup.remove();
+                currentPopup = null;
+            }
+
+            fetch('/mini-profile/' + username + '/')
+                .then(response => response.json())
+                .then(data => {
+                    const popup = document.createElement('div');
+                    popup.className = 'mini-profile-popup';
+                    popup.dataset.username = username;
+                    popup.innerHTML = data.html;
+                    document.body.appendChild(popup);
+
+                    const rect = anchor.getBoundingClientRect();
+                    const popupRect = popup.getBoundingClientRect();
+                    let left = rect.left + (rect.width / 2) - (popupRect.width / 2);
+                    let top = rect.bottom + 8;
+
+                    if (left < 10) left = 10;
+                    if (left + popupRect.width > window.innerWidth - 10) {
+                        left = window.innerWidth - popupRect.width - 10;
+                    }
+                    if (top + popupRect.height > window.innerHeight - 10) {
+                        top = rect.top - popupRect.height - 8;
+                    }
+
+                    popup.style.left = left + 'px';
+                    popup.style.top = top + 'px';
+
+                    requestAnimationFrame(() => {
+                        popup.classList.add('visible');
+                    });
+
+                    currentPopup = popup;
+
+                    const hideOnClick = (e) => {
+                        if (!popup.contains(e.target) && e.target !== anchor) {
+                            hidePopup(popup);
+                            document.removeEventListener('click', hideOnClick);
+                        }
+                    };
+                    setTimeout(() => {
+                        document.addEventListener('click', hideOnClick);
+                    }, 50);
+                    popup._hideOnClick = hideOnClick;
+                })
+                .catch(err => console.warn('Mini profile error:', err));
+        }
+
+        function hidePopup(popup) {
+            if (!popup) popup = currentPopup;
+            if (!popup) return;
+            popup.classList.remove('visible');
+            setTimeout(() => {
+                if (popup.parentNode) popup.remove();
+                if (currentPopup === popup) currentPopup = null;
+                if (popup._hideOnClick) {
+                    document.removeEventListener('click', popup._hideOnClick);
+                }
+            }, 200);
+        }
+
+        document.addEventListener('mouseover', function(e) {
+            const link = e.target.closest('a[href*="/profile/"], .author-link');
+            if (!link) return;
+            const username = getUsernameFromLink(link);
+            if (!username) return;
+
+            if (hideTimeout) {
+                clearTimeout(hideTimeout);
+                hideTimeout = null;
+            }
+
+            if (currentPopup && currentPopup.dataset.username === username) {
+                return;
+            }
+
+            if (showTimeout) clearTimeout(showTimeout);
+            showTimeout = setTimeout(() => {
+                createPopup(username, link);
+                showTimeout = null;
+            }, 400);
+        });
+
+        document.addEventListener('mouseout', function(e) {
+            const link = e.target.closest('a[href*="/profile/"], .author-link, .comment-author');
+            if (!link) return;
+            if (showTimeout) {
+                clearTimeout(showTimeout);
+                showTimeout = null;
+            }
+            if (hideTimeout) clearTimeout(hideTimeout);
+            hideTimeout = setTimeout(() => {
+                if (currentPopup) {
+                    const popup = currentPopup;
+                    hidePopup(popup);
+                }
+                hideTimeout = null;
+            }, 300);
+        });
+
+        document.addEventListener('mouseover', function(e) {
+            const popup = e.target.closest('.mini-profile-popup');
+            if (popup && currentPopup === popup) {
+                if (hideTimeout) {
+                    clearTimeout(hideTimeout);
+                    hideTimeout = null;
+                }
+            }
+        });
+
+        document.addEventListener('mouseout', function(e) {
+            const popup = e.target.closest('.mini-profile-popup');
+            if (popup && currentPopup === popup) {
+                if (hideTimeout) clearTimeout(hideTimeout);
+                hideTimeout = setTimeout(() => {
+                    hidePopup(popup);
+                    hideTimeout = null;
+                }, 200);
+            }
+        });
+    })();
+</script>
 </body>
 </html>

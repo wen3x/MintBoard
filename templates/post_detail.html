@@ -7,7 +7,7 @@
             <h1 class="post-title">{{ post.title }}</h1>
             <div class="post-meta">
                 <span>
-                    <a href="{% url 'core:profile_detail' username=post.author.username %}" class="author-link">
+                    <a href="{% url 'core:profile_detail' username=post.author.username %}" class="author-link" data-username="{{ post.author.username }}">
                         {{ post.author.username }}
                     </a>
                 </span>
@@ -59,7 +59,7 @@
             {% for comment in comments %}
                 <div class="comment-item">
                     <div class="comment-header">
-                        <a href="{% url 'core:profile_detail' username=comment.author.username %}" class="comment-author">
+                        <a href="{% url 'core:profile_detail' username=comment.author.username %}" class="comment-author" data-username="{{ comment.author.username }}">
                             {{ comment.author.username }}
                         </a>
                         <span class="comment-date">{{ comment.created_at|date:"F j, Y, g:i a" }}</span>

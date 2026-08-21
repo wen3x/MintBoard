@@ -8,6 +8,8 @@ from django.template.loader import render_to_string
 from django.db.models import Count, Exists, OuterRef, Value, BooleanField
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import DeleteView
+from django.http import JsonResponse
+from django.template.loader import render_to_string
 
 from .forms import CustomUserCreationForm, PostForm, CommentForm
 from .models import Post, SiteConfig, Comment
@@ -181,3 +183,8 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
 
     def get_success_url(self):
         return self.object.post.get_absolute_url()
+
+def mini_profile(request, username):
+    user = get_object_or_404(User, username=username)
+    html = render_to_string('partials/mini_profile.html', {'user': user})
+    return JsonResponse({'html': html})
